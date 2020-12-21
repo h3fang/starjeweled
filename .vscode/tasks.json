@@ -1,0 +1,64 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "cmake debug",
+			"type": "shell",
+			"command": "/usr/bin/cmake",
+			"args": [
+				"-DCMAKE_BUILD_TYPE=debug",
+				"-B",
+				"build",
+				"${workspaceRoot}"
+			]
+		},
+		{
+			"label": "cmake release",
+			"type": "shell",
+			"command": "/usr/bin/cmake",
+			"args": [
+				"-DCMAKE_BUILD_TYPE=release",
+				"-B",
+				"build",
+				"${workspaceRoot}"
+			]
+		},
+		{
+			"label": "make",
+			"type": "shell",
+			"command": "/usr/bin/cmake",
+			"args": [
+				"--build",
+				"build",
+				"--parallel"
+			],
+			"dependsOn": [
+				"cmake"
+			]
+		},
+		{
+			"label": "build release",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [
+				"cmake release",
+				"make"
+			]
+		},
+		{
+			"label": "build debug",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": [
+				"cmake debug",
+				"make"
+			]
+		}
+	]
+}
