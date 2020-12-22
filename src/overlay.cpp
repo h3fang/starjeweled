@@ -67,10 +67,6 @@ Overlay::Overlay(QWidget *parent) :
     QTimer *t = new QTimer(this); t->setTimerType(Qt::PreciseTimer);
     connect(t, SIGNAL(timeout()), this, SLOT(update()));
     t->start(100);
-
-//    t = new QTimer(this); t->setTimerType(Qt::PreciseTimer);
-//    connect(t, SIGNAL(timeout()), this, SLOT(make_move()));
-//    t->start(1000);
 }
 
 Overlay::~Overlay() {
@@ -169,36 +165,16 @@ void Overlay::get_board(XImage* img, QPainter& p) {
     }
 }
 
-void Overlay::make_move() {
-    // get the best move
+Solution* Overlay::get_best_move() {
     auto solutions = calc_solutions();
     if (solutions.empty()) {
-        return;
+        return nullptr;
     }
     sort(solutions.begin(), solutions.end(), [](const auto& lhs, const auto& rhs){
         return lhs.i1 > rhs.i1 || lhs.i2 > rhs.i2;
     });
 
-    auto starcraft = get_window(STARCRAFT_WINDOW_NAME);
-
-    const auto& s = solutions[0];
-    const int x1 = x0 + (s.j1 - PADDING) * w + 0.5 * w, y1 = y0 + (s.i1 - PADDING) * w + 0.5 * w;
-    const int x2 = x0 + (s.j2 - PADDING) * w + 0.5 * w, y2 = y0 + (s.i2 - PADDING) * w + 0.5 * w;
-
-    // const int screen = DefaultScreen(xdotool->xdpy);
-
-    // inject the clicks
-    // xdo_move_mouse(xdotool, x1, y1, screen);
-    // xdo_wait_for_mouse_move_to(xdotool, x1, y1);
-    // usleep(1000 + rand() % 3000);
-    // xdo_click_window(xdotool, starcraft, 0);
-    // usleep(1000 + rand() % 3000);
-
-    // xdo_move_mouse(xdotool, x2, y2, screen);
-    // xdo_wait_for_mouse_move_to(xdotool, x2, y2);
-    // usleep(1000 + rand() % 3000);
-    // xdo_click_window(xdotool, starcraft, 0);
-    // usleep(1000 + rand() % 3000);
+    return &solutions[0];
 }
 
 vector<Solution> Overlay::calc_solutions() {

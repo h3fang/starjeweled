@@ -46,15 +46,13 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *) override;
-    XImage* shootScreen(Window window);
-
-protected slots:
-    void make_move();
 
 private:
     Window get_window(const char* name);
+    XImage* shootScreen(Window window);
     int match_color(const vector<int>& c, vector<vector<int>>& palette, int threshold = 10);
     void get_board(XImage* img, QPainter& p);
     bool is_solution(const int m, const int n, const int dx, const int dy);
     vector<Solution> calc_solutions();
+    Solution* get_best_move();
 };
