@@ -30,7 +30,7 @@ class Overlay : public QWidget
 {
     Q_OBJECT
 
-    const char* STARCRAFT_WINDOW_NAME = "星际争霸";
+    const uchar WINDOW_NAME[13] = {0xe6, 0x98, 0x9f, 0xe9, 0x99, 0x85, 0xe4, 0xba, 0x89, 0xe9, 0x9c, 0xb8, 0};
     const int N = 8, PADDING = 3;
     // board geometry for resolution 1920x1080
     const int w = 72, x0 = 1305, y0 = 101;

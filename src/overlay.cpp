@@ -94,12 +94,12 @@ void Overlay::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    auto starcraft = get_window(STARCRAFT_WINDOW_NAME);
-    if (!is_window_visible(display, starcraft)) {
+    auto game = get_window((char *)WINDOW_NAME);
+    if (!is_window_visible(display, game)) {
         return;
     }
 
-    auto img = shootScreen(starcraft);
+    auto img = shootScreen(game);
     if (img->width != 1920 || img->height != 1080) {
         return;
     }
