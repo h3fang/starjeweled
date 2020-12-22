@@ -1,7 +1,7 @@
 QT += widgets
 CONFIG += c++17
 
-TARGET = openoffice
+TARGET = terminal
 
 release {
     DEFINES += NDEBUG

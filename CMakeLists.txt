@@ -14,7 +14,7 @@ set(sources
     src/overlay.cpp
     src/main.cpp)
 
-set(BIN_TARGET "openoffice")
+set(BIN_TARGET "terminal")
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 find_package(X11 REQUIRED)
@@ -22,11 +22,9 @@ find_package(X11 REQUIRED)
 add_executable(${BIN_TARGET} ${sources} )
 set_property(TARGET ${BIN_TARGET} PROPERTY AUTOMOC ON)
 
-target_include_directories(${BIN_TARGET} PRIVATE
-                    ${XRANDR_INCLUDE_DIR}
-                    ${X11_INCLUDE_DIR} )
+target_include_directories(${BIN_TARGET} PRIVATE ${X11_INCLUDE_DIR} )
 
-target_link_libraries( ${BIN_TARGET}
+target_link_libraries(${BIN_TARGET}
                        Qt5::Core
                        Qt5::Widgets
                        ${X11_LIBRARIES}
