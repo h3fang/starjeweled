@@ -34,7 +34,14 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
-#include <glm/glm.hpp>
+
+struct vec2 {
+    int x = 0, y = 0;
+};
+
+struct vec4 {
+    int x = 0, y = 0, z = 0, w = 0;
+};
 
 class X11 {
 private:
@@ -56,12 +63,12 @@ public:
     Visual* visual;
     Screen* screen;
     Window root;
-    XImage* getImage( Window d, int x, int y, int w, int h, glm::ivec2& imageloc );
+    XImage* getImage( Window d, int x, int y, int w, int h, vec2& imageloc );
     XRRScreenResources* res;
     std::vector<XRRCrtcInfo*> getCRTCS();
     void freeCRTCS( std::vector<XRRCrtcInfo*> monitors );
 };
 
-glm::ivec4 getWindowGeometry( X11* x11, Window win );
+vec4 getWindowGeometry( X11* x11, Window win );
 
 #endif

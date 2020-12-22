@@ -84,7 +84,7 @@ Window Overlay::get_window(const char* name) {
 
 XImage* Overlay::shootScreen(Window window)
 {
-    glm::ivec2 imageloc;
+    vec2 imageloc;
     auto x = X11("");
     return x.getImage(window ? window : x.root, 0, 0, 1920, 1080, imageloc);
 }

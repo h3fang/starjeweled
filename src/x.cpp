@@ -1,13 +1,10 @@
 #include "x.hpp"
 
-//static char _x_err = 0;
-//static int
-//TmpXError(Display * d, XErrorEvent * ev) {
-//    _x_err = 1;
-//    return 0;
-//}
+#include <limits.h>
+#include <algorithm>
 
-glm::ivec4 getWindowGeometry( X11* x11, Window win ) {
+
+vec4 getWindowGeometry( X11* x11, Window win ) {
     // First lets check for if we're a window manager frame.
     Window root, parent;
     Window* children;
@@ -43,10 +40,10 @@ glm::ivec4 getWindowGeometry( X11* x11, Window win ) {
         // Then lets grab the dims of the child window.
         XWindowAttributes attr;
         XGetWindowAttributes( x11->display, actualWindow, &attr );
-        unsigned int width = attr.width;           
-        unsigned int height = attr.height;         
+        int width = attr.width;
+        int height = attr.height;
         // We combine both border widths.
-        unsigned int border = attr.border_width+frameattr.border_width;   
+        int border = attr.border_width+frameattr.border_width;
         int x, y;
         // Gotta translate them into root coords, we can adjust for the border width here.
         Window junk;
@@ -61,38 +58,38 @@ glm::ivec4 getWindowGeometry( X11* x11, Window win ) {
         x -= ldata[0];
         y -= ldata[2];
         XFree( data );
-        return glm::vec4( x, y, width, height );
+        return vec4{ x, y, width, height };
     } else {
         // Either the WM is malfunctioning, or the window secified isn't a window manager frame.
         // so we just rely on X.
         XWindowAttributes attr;
         XGetWindowAttributes( x11->display, win, &attr );
-        unsigned int width = attr.width;           
-        unsigned int height = attr.height;         
+        int width = attr.width;
+        int height = attr.height;
         // We combine both border widths.
-        unsigned int border = attr.border_width;   
+        int border = attr.border_width;
         int x, y;
         // Gotta translate them into root coords, we can adjust for the border width here.
         Window junk;
         XTranslateCoordinates( x11->display, win, attr.root, -border, -border, &x, &y, &junk );
         width += border*2;
         height += border*2;
-        return glm::vec4( x, y, width, height );
+        return vec4{ x, y, width, height };
     }
 }
 
 std::vector<XRRCrtcInfo*> X11::getCRTCS() {
-    std::vector<XRRCrtcInfo*> monitors;                                            
-    if ( !res ) {            
-        return monitors;       
+    std::vector<XRRCrtcInfo*> monitors;
+    if ( !res ) {
+        return monitors;
     }
-    for ( int i=0;i<res->ncrtc;i++ ) {                                           
-        monitors.push_back( XRRGetCrtcInfo( display, res, res->crtcs[ i ] ) );   
+    for ( int i=0;i<res->ncrtc;i++ ) {
+        monitors.push_back( XRRGetCrtcInfo( display, res, res->crtcs[ i ] ) );
     }
-    return monitors;           
-}   
-    
-void X11::freeCRTCS( std::vector<XRRCrtcInfo*> monitors ) {              
+    return monitors;
+}
+
+void X11::freeCRTCS( std::vector<XRRCrtcInfo*> monitors ) {
     for ( unsigned int i=0;i<monitors.size();i++ ) {
         XRRFreeCrtcInfo( monitors[ i ] );
     }
@@ -137,17 +134,17 @@ X11::~X11() {
     XCloseDisplay( display );
 }
 
-XImage* X11::getImage( Window draw, int x, int y, int w, int h, glm::ivec2& imageloc ) {
-    glm::ivec4 sourceGeo = getWindowGeometry( this, draw );
+XImage* X11::getImage( Window draw, int x, int y, int w, int h, vec2& imageloc ) {
+    vec4 sourceGeo = getWindowGeometry( this, draw );
     // We need to clamp the selection to fit within the
     // provided window.
 
-    x = glm::clamp( x, sourceGeo.x, sourceGeo.x+sourceGeo.z );
-    y = glm::clamp( y, sourceGeo.y, sourceGeo.y+sourceGeo.w );
-    w = glm::clamp( w, 1, sourceGeo.x+sourceGeo.z-x );
-    h = glm::clamp( h, 1, sourceGeo.y+sourceGeo.w-y );
+    x = std::clamp( x, sourceGeo.x, sourceGeo.x+sourceGeo.z );
+    y = std::clamp( y, sourceGeo.y, sourceGeo.y+sourceGeo.w );
+    w = std::clamp( w, 1, sourceGeo.x+sourceGeo.z-x );
+    h = std::clamp( h, 1, sourceGeo.y+sourceGeo.w-y );
 
-    imageloc = glm::ivec2( x, y );
+    imageloc = { x, y };
 
     // Translate the newly clamped selection to local coordinates.
     int localx, localy;
@@ -223,7 +220,7 @@ bool X11::hasClipping( Window d ) {
 
 XserverRegion X11::findRegion( Window d ) {
     XserverRegion rootRegion = XFixesCreateRegionFromWindow( display, d, WindowRegionBounding );
-    glm::vec4 rootgeo = getWindowGeometry( this, d );
+    vec4 rootgeo = getWindowGeometry( this, d );
     XFixesTranslateRegion( display, rootRegion, rootgeo.x, rootgeo.y ); // Regions are in respect to the root window by default.
     unionClippingRegions( rootRegion, d );
     unionBorderRegions( rootRegion, d );
@@ -231,7 +228,7 @@ XserverRegion X11::findRegion( Window d ) {
 }
 
 void X11::unionBorderRegions( XserverRegion rootRegion, Window d ) {
-    glm::vec4 bordergeo = getWindowGeometry( this, d );
+    vec4 bordergeo = getWindowGeometry( this, d );
     XRectangle* rects = new XRectangle[1];
     rects[0].x = bordergeo.x;
     rects[0].y = bordergeo.y;
@@ -260,7 +257,7 @@ void X11::unionClippingRegions( XserverRegion rootRegion, Window child ) {
     for ( unsigned int i=0;i<num_children;i++ ) {
         if ( hasClipping( children[i] ) ) {
             Window clippingWindow = children[i];
-            glm::vec4 geo = getWindowGeometry( this, clippingWindow );
+            vec4 geo = getWindowGeometry( this, clippingWindow );
             XRectangle* rects = new XRectangle[1];
             rects[0].x = geo.x;
             rects[0].y = geo.y;
