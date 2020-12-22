@@ -2,6 +2,15 @@
 
 #include "x.hpp"
 
+int is_window_visible(Display *display, Window wid) {
+    XWindowAttributes wattr;
+    XGetWindowAttributes(display, wid, &wattr);
+    if (wattr.map_state != IsViewable)
+        return False;
+
+    return True;
+}
+
 Window window_from_name_search(Display *display, Window current, char const *target) {
     Window retval, root, parent, *children;
     unsigned children_count;
@@ -85,19 +94,23 @@ void Overlay::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-#ifndef NDEBUG
-    // draw a rectagle around the board (for debugging)
-    p.setPen(QPen(Qt::blue, 1.0));
-    p.drawRect(QRectF(x0, y0, N * w, N *w));
-#endif
-
     auto starcraft = get_window(STARCRAFT_WINDOW_NAME);
+    if (!is_window_visible(display, starcraft)) {
+        return;
+    }
+
     auto img = shootScreen(starcraft);
     if (img->width != 1920 || img->height != 1080) {
         return;
     }
     get_board(img, p);
     XDestroyImage(img);
+
+#ifndef NDEBUG
+    // draw a rectagle around the board (for debugging)
+    p.setPen(QPen(Qt::blue, 1.0));
+    p.drawRect(QRectF(x0, y0, N * w, N *w));
+#endif
 
     // draw a line for each solution
     p.setPen(QPen(Qt::magenta, 7.0));
