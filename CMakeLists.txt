@@ -20,10 +20,9 @@ find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 find_package(X11 REQUIRED)
 
 add_executable(${BIN_TARGET} ${sources} )
-set_property(TARGET ${BIN_TARGET} PROPERTY AUTOMOC ON)
-
+set_target_properties(${BIN_TARGET} PROPERTIES AUTOMOC ON)
+target_compile_options(${BIN_TARGET} PRIVATE -Wall -Wextra -pedantic -Werror)
 target_include_directories(${BIN_TARGET} PRIVATE ${X11_INCLUDE_DIR} )
-
 target_link_libraries(${BIN_TARGET}
                        Qt5::Core
                        Qt5::Widgets

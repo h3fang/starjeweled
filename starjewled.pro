@@ -1,5 +1,5 @@
-QT += widgets
-CONFIG += c++17
+QT += core widgets
+CONFIG += c++17 warn_on
 
 TARGET = terminal
 

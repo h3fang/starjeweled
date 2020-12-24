@@ -8,7 +8,7 @@
             "name": "build and debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/openoffice",
+            "program": "${workspaceFolder}/build/terminal",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
