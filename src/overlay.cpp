@@ -18,7 +18,7 @@ Window window_from_name_search(Display *display, Window current, char const *tar
     /* Check if this window has the name we seek */
     XTextProperty text;
     if(XGetWMName(display, current, &text) > 0 && text.nitems > 0) {
-        int count = 0, result;
+        int count = 0;
         char **list = NULL;
         if (Xutf8TextPropertyToTextList(display, &text, &list, &count) == Success && count > 0) {
             const char* r = strstr(list[0], target);
