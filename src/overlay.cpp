@@ -105,6 +105,7 @@ void Overlay::paintEvent(QPaintEvent *)
 #ifndef NDEBUG
     // draw a rectagle around the board (for debugging)
     p.setPen(QPen(Qt::blue, 1.0));
+    p.setBrush(Qt::NoBrush);
     p.drawRect(QRectF(x0, y0, N * w, N *w));
 #endif
 
