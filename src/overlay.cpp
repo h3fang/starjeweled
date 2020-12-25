@@ -12,9 +12,6 @@ int is_window_visible(Display *display, Window wid) {
 }
 
 Window window_from_name_search(Display *display, Window current, char const *target) {
-    Window retval, root, parent, *children;
-    unsigned children_count;
-
     /* Check if this window has the name we seek */
     XTextProperty text;
     if(XGetWMName(display, current, &text) > 0 && text.nitems > 0) {
@@ -32,12 +29,12 @@ Window window_from_name_search(Display *display, Window current, char const *tar
     }
     XFree(text.value);
 
-    retval = 0;
+    Window retval = 0, root, parent, *children;
+    unsigned children_count;
 
     /* If it does not: check all subwindows recursively. */
     if(0 != XQueryTree(display, current, &root, &parent, &children, &children_count)) {
-        unsigned i;
-        for(i = 0; i < children_count; ++i) {
+        for(unsigned i = 0; i < children_count; ++i) {
             Window win = window_from_name_search(display, children[i], target);
 
             if(win != 0) {
