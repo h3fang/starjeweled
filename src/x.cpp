@@ -134,7 +134,7 @@ X11::~X11() {
     XCloseDisplay( display );
 }
 
-XImage* X11::getImage( Window draw, int x, int y, int w, int h, vec2& imageloc ) {
+XImage* X11::getImage( Window draw, int x, int y, int w, int h) {
     vec4 sourceGeo = getWindowGeometry( this, draw );
     // We need to clamp the selection to fit within the
     // provided window.
@@ -143,8 +143,6 @@ XImage* X11::getImage( Window draw, int x, int y, int w, int h, vec2& imageloc )
     y = std::clamp( y, sourceGeo.y, sourceGeo.y+sourceGeo.w );
     w = std::clamp( w, 1, sourceGeo.x+sourceGeo.z-x );
     h = std::clamp( h, 1, sourceGeo.y+sourceGeo.w-y );
-
-    imageloc = { x, y };
 
     // Translate the newly clamped selection to local coordinates.
     int localx, localy;

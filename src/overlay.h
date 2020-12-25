@@ -48,8 +48,6 @@ protected:
     void paintEvent(QPaintEvent *) override;
 
 private:
-    Window get_window(const char* name);
-    XImage* shootScreen(Window window);
     int match_color(const vector<int>& c, vector<vector<int>>& palette, int threshold = 10);
     void get_board(XImage* img, QPainter& p);
     bool is_solution(const int m, const int n, const int dx, const int dy);

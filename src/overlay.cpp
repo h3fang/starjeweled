@@ -73,32 +73,23 @@ Overlay::~Overlay() {
     XCloseDisplay(display);
 }
 
-Window Overlay::get_window(const char* name) {
-    Window r = window_from_name_search(display, root_win, name);
-    return r;
-}
-
-XImage* Overlay::shootScreen(Window window)
-{
-    vec2 imageloc;
-    auto x = X11("");
-    return x.getImage(window ? window : x.root, 0, 0, 1920, 1080, imageloc);
-}
-
 void Overlay::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    auto game = get_window((char *)WINDOW_NAME);
-    if (!is_window_visible(display, game)) {
+    const auto game = window_from_name_search(display, root_win, (char *)WINDOW_NAME);
+    if (game == 0) {
+        return;
+    }
+    XWindowAttributes attr;
+    if (XGetWindowAttributes(display, game, &attr) == 0 ||
+        attr.width != 1920 || attr.height != 1080 ||
+        !is_window_visible(display, game)) {
         return;
     }
 
-    auto img = shootScreen(game);
-    if (img->width != 1920 || img->height != 1080) {
-        return;
-    }
+    auto img = X11("").getImage(game, x0, y0, N*w, N*w);
     get_board(img, p);
     XDestroyImage(img);
 
@@ -141,7 +132,7 @@ void Overlay::get_board(XImage* img, QPainter& p) {
     for (int m = 0; m < N; ++m ) {
         for (int n =0; n < N; ++n) {
             vector<int> rgb(3);
-            const int x = x0 + n * w + margin, y = y0 + m * w + margin;
+            const int x = n * w + margin, y = m * w + margin;
             for (int i = 0; i < cell_w; ++i) {
                 for (int j = 0; j < cell_w; ++j) {
                     const QColor c(XGetPixel(img, x + i, y + j));
@@ -157,10 +148,10 @@ void Overlay::get_board(XImage* img, QPainter& p) {
 #ifndef NDEBUG
             p.setPen(Qt::NoPen);
             p.setBrush(QBrush(QColor(rgb[0], rgb[1], rgb[2])));
-            p.drawRect(QRect(x-margin, y-margin, margin, margin));
+            p.drawRect(QRect(x0+x-margin, y0+y-margin, margin, margin));
             p.setPen(Qt::red);
             p.setFont(QFont("Monospace", 8));
-            p.drawText(x, y, QString::number(board[m+PADDING][n+PADDING]));
+            p.drawText(x0+x, y0+y, QString::number(board[m+PADDING][n+PADDING]));
 #endif
         }
     }

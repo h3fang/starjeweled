@@ -63,7 +63,7 @@ public:
     Visual* visual;
     Screen* screen;
     Window root;
-    XImage* getImage( Window d, int x, int y, int w, int h, vec2& imageloc );
+    XImage* getImage( Window d, int x, int y, int w, int h);
     XRRScreenResources* res;
     std::vector<XRRCrtcInfo*> getCRTCS();
     void freeCRTCS( std::vector<XRRCrtcInfo*> monitors );
