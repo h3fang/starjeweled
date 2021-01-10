@@ -1,6 +1,9 @@
 #include "overlay.h"
 
+#include <unistd.h>
+
 #include "x.hpp"
+#include "mouse.h"
 
 int is_window_visible(Display *display, Window wid) {
     XWindowAttributes wattr;
@@ -49,6 +52,25 @@ Window window_from_name_search(Display *display, Window current, char const *tar
     return retval;
 }
 
+std::pair<int, int> get_mouse_position(Display* dpy) {
+    int ret = False;
+    std::pair<int, int> r{-1, -1};
+    Window window = 0, root = 0;
+    int dummy_int = 0;
+    unsigned int dummy_uint = 0;
+
+    for (int i = 0; i < ScreenCount(dpy); i++) {
+        Screen *screen = ScreenOfDisplay(dpy, i);
+        ret = XQueryPointer(dpy, RootWindowOfScreen(screen), &root, &window, &r.first, &r.second, &dummy_int, &dummy_int,
+                            &dummy_uint);
+        if (ret == True) {
+            break;
+        }
+    }
+
+    return r;
+}
+
 Overlay::Overlay(QWidget *parent) :
     QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint),
     board(N+2*PADDING, vector<int>(N+2*PADDING, -1)),
@@ -64,6 +86,10 @@ Overlay::Overlay(QWidget *parent) :
     QTimer *t = new QTimer(this); t->setTimerType(Qt::PreciseTimer);
     connect(t, SIGNAL(timeout()), this, SLOT(update()));
     t->start(100);
+
+    t = new QTimer(this); t->setTimerType(Qt::PreciseTimer);
+    connect(t, SIGNAL(timeout()), this, SLOT(make_move()));
+    t->start(600);
 }
 
 Overlay::~Overlay() {
@@ -76,13 +102,7 @@ void Overlay::paintEvent(QPaintEvent *)
     p.setRenderHint(QPainter::Antialiasing);
 
     const auto game = window_from_name_search(display, root_win, (char *)WINDOW_NAME);
-    if (game == 0) {
-        return;
-    }
-    XWindowAttributes attr;
-    if (XGetWindowAttributes(display, game, &attr) == 0 ||
-        attr.width != 1920 || attr.height != 1080 ||
-        !is_window_visible(display, game)) {
+    if (!is_game_visible(game)) {
         return;
     }
 
@@ -105,6 +125,21 @@ void Overlay::paintEvent(QPaintEvent *)
         const int x2 = x0 + (s.j2) * w + 0.5 * w, y2 = y0 + (s.i2) * w + 0.5 * w;
         p.drawLine(x1,y1,x2,y2);
     }
+}
+
+bool Overlay::is_game_visible(Window game) {
+    if (game == 0) {
+        return false;
+    }
+
+    XWindowAttributes attr;
+    if (XGetWindowAttributes(display, game, &attr) == 0 ||
+        attr.width != 1920 || attr.height != 1080 ||
+        !is_window_visible(display, game)) {
+        return false;
+    }
+
+    return true;
 }
 
 int Overlay::match_color(const vector<int>& c, vector<vector<int>>& palette, int threshold) {
@@ -154,16 +189,38 @@ void Overlay::get_board(XImage* img, QPainter& p) {
     }
 }
 
-Solution* Overlay::get_best_move() {
+Solution Overlay::get_best_move() {
     auto solutions = calc_solutions();
     if (solutions.empty()) {
-        return nullptr;
+        return {-1, -1, -1, -1};
     }
     sort(solutions.begin(), solutions.end(), [](const auto& lhs, const auto& rhs){
         return lhs.i1 > rhs.i1 || lhs.i2 > rhs.i2;
     });
 
-    return &solutions[0];
+    return solutions[0];
+}
+
+void Overlay::make_move() {
+    const auto game = window_from_name_search(display, root_win, (char *)WINDOW_NAME);
+    if (!is_game_visible(game)) {
+        return;
+    }
+    auto p = get_mouse_position(display);
+    if (p.first < x0 || p.first > x0 + N * w || p.second < y0 || p.second > y0 + N * w) {
+        return;
+    }
+    auto s = get_best_move();
+    if (s.i1 == -1) {
+        return;
+    }
+    const auto left_btn = 1; //XKeysymToKeycode(display, XK_Pointer_Button1);
+    const auto screen = DefaultScreen(display);
+    move_mouse(display, (s.j1 + 0.5) * w + x0, (s.i1 + 0.5) * w + y0, screen);
+    mouse_click(display, left_btn);
+    usleep(rand() % 5000 + 1000);
+    move_mouse(display, (s.j2 + 0.5) * w + x0, (s.i2 + 0.5) * w + y0, screen);
+    mouse_click(display, left_btn);
 }
 
 vector<Solution> Overlay::calc_solutions() {
