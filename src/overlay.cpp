@@ -50,7 +50,7 @@ Window window_from_name_search(Display *display, Window current, char const *tar
 }
 
 Overlay::Overlay(QWidget *parent) :
-    QWidget(parent, Qt::X11BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint),
+    QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint),
     board(N+2*PADDING, vector<int>(N+2*PADDING, -1)),
     display(XOpenDisplay(NULL)),
     root_win(XDefaultRootWindow(display))
