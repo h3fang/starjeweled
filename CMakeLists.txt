@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(sources
     src/x.cpp
     src/overlay.cpp
+    src/mouse.cpp
     src/main.cpp)
 
 set(BIN_TARGET "terminal")
@@ -30,4 +31,5 @@ target_link_libraries(${BIN_TARGET}
                        -lXfixes
                        -lXcomposite
                        -lXrandr
-                       -lXrender )
+                       -lXrender
+                       -lXtst )
