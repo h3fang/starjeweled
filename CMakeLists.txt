@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.9 )
 
-project(starjewled VERSION 0.2.0)
+project(starjeweled VERSION 0.2.0)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
