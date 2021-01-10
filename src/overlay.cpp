@@ -101,8 +101,8 @@ void Overlay::paintEvent(QPaintEvent *)
     p.setPen(QPen(Qt::magenta, 7.0));
     auto solutions = calc_solutions();
     for(const auto& s : solutions) {
-        const int x1 = x0 + (s.j1 - PADDING) * w + 0.5 * w, y1 = y0 + (s.i1 - PADDING) * w + 0.5 * w;
-        const int x2 = x0 + (s.j2 - PADDING) * w + 0.5 * w, y2 = y0 + (s.i2 - PADDING) * w + 0.5 * w;
+        const int x1 = x0 + (s.j1) * w + 0.5 * w, y1 = y0 + (s.i1) * w + 0.5 * w;
+        const int x2 = x0 + (s.j2) * w + 0.5 * w, y2 = y0 + (s.i2) * w + 0.5 * w;
         p.drawLine(x1,y1,x2,y2);
     }
 }
@@ -182,7 +182,7 @@ vector<Solution> Overlay::calc_solutions() {
                  || (cr == board[m+1][n] && cr == board[m+2][n])
                  || (cr == board[m-1][n] && cr == board[m+1][n])
                 ) {
-                    s.push_back({m,n,m,n+1});
+                    s.push_back({m - PADDING, n - PADDING, m - PADDING, n + 1 - PADDING});
                 }
             }
             // swap with the top cell
@@ -196,7 +196,7 @@ vector<Solution> Overlay::calc_solutions() {
                  || (ct == board[m][n+1] && ct == board[m][n+2])
                  || (ct == board[m][n-1] && ct == board[m][n+1])
                 ) {
-                    s.push_back({m,n,m-1,n});
+                    s.push_back({m - PADDING, n - PADDING, m - 1 - PADDING, n - PADDING});
                 }
             }
         }
