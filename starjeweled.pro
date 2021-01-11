@@ -8,10 +8,12 @@ release {
 }
 
 HEADERS           = src/overlay.h \
-                    src/x.hpp
+                    src/x.hpp \
+                    src/mouse.h
 
 SOURCES           = src/main.cpp \
                     src/overlay.cpp \
-                    src/x.cpp
+                    src/x.cpp \
+                    src/mouse.cpp
 
-LIBS += -lX11 -lXext -lXrandr -lXrender -lXcomposite -lXfixes
+LIBS += -lX11 -lXext -lXrandr -lXrender -lXcomposite -lXfixes -lXtst
