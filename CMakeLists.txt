@@ -10,11 +10,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(sources
-    src/x.cpp
-    src/screencapture.cpp
+    src/main.cpp
     src/mouse.cpp
     src/overlay.cpp
-    src/main.cpp)
+    src/screencapture.cpp
+    src/solver.cpp
+    src/x.cpp)
 
 set(BIN_TARGET "terminal")
 
