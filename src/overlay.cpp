@@ -9,8 +9,7 @@
 #include "mouse.h"
 
 Overlay::Overlay(bool automate, int interval, QWidget *parent) :
-    QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint),
-    board(N+2*PADDING, vector<int>(N+2*PADDING, -1))
+    QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint)
 {
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -29,9 +28,6 @@ Overlay::Overlay(bool automate, int interval, QWidget *parent) :
     }
 }
 
-Overlay::~Overlay() {
-}
-
 void Overlay::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
@@ -41,25 +37,25 @@ void Overlay::paintEvent(QPaintEvent *)
         return;
     }
 
-    if (!screencapture.capture((char *)WINDOW_NAME, x0, y0, N * w, N * w)) {
+    if (!screencapture.capture((char *)WINDOW_NAME, X0, Y0, solver.N * W, solver.N * W)) {
         return;
     }
 
     get_board(p);
+    solver.calc_solutions();
 
 #ifndef NDEBUG
     // draw a rectagle around the board (for debugging)
     p.setPen(QPen(Qt::blue, 1.0));
     p.setBrush(Qt::NoBrush);
-    p.drawRect(QRectF(x0, y0, N * w, N *w));
+    p.drawRect(QRectF(X0, Y0, solver.N * W, solver.N *W));
 #endif
 
     // draw a line for each solution
     p.setPen(QPen(Qt::magenta, 7.0));
-    auto solutions = calc_solutions();
-    for(const auto& s : solutions) {
-        const int x1 = x0 + (s.j1) * w + 0.5 * w, y1 = y0 + (s.i1) * w + 0.5 * w;
-        const int x2 = x0 + (s.j2) * w + 0.5 * w, y2 = y0 + (s.i2) * w + 0.5 * w;
+    for(const auto& [s, v] : solver.solutions) {
+        const int x1 = X0 + (s.j1) * W + 0.5 * W, y1 = Y0 + (s.i1) * W + 0.5 * W;
+        const int x2 = X0 + (s.j2) * W + 0.5 * W, y2 = Y0 + (s.i2) * W + 0.5 * W;
         p.drawLine(x1,y1,x2,y2);
     }
 }
@@ -81,12 +77,12 @@ void Overlay::get_board(QPainter& p) {
     Q_UNUSED(p);
     vector<vector<int>> pallete;
 
-    const float cell_w = 0.6 * w, margin = 0.5 * (w - cell_w), n_pixels = cell_w * cell_w;
+    const float cell_w = 0.6 * W, margin = 0.5 * (W - cell_w), n_pixels = cell_w * cell_w;
 
-    for (int m = 0; m < N; ++m ) {
-        for (int n =0; n < N; ++n) {
+    for (int m = 0; m < solver.N; ++m ) {
+        for (int n =0; n < solver.N; ++n) {
             vector<int> rgb(3);
-            const int x = n * w + margin, y = m * w + margin;
+            const int x = n * W + margin, y = m * W + margin;
             for (int i = 0; i < cell_w; ++i) {
                 for (int j = 0; j < cell_w; ++j) {
                     const QColor c(screencapture.get_pixel(x + i, y + j));
@@ -98,88 +94,43 @@ void Overlay::get_board(QPainter& p) {
             rgb[0] = rgb[0] / n_pixels;
             rgb[1] = rgb[1] / n_pixels;
             rgb[2] = rgb[2] / n_pixels;
-            board[m+PADDING][n+PADDING] = match_color(rgb, pallete, 15);
+            solver.board[m+solver.PADDING][n+solver.PADDING] = match_color(rgb, pallete, 15);
 #ifndef NDEBUG
             p.setPen(Qt::NoPen);
             p.setBrush(QBrush(QColor(rgb[0], rgb[1], rgb[2])));
-            p.drawRect(QRect(x0+x-margin, y0+y-margin, margin, margin));
+            p.drawRect(QRect(X0+x-margin, Y0+y-margin, margin, margin));
             p.setPen(Qt::red);
             p.setFont(QFont("Monospace", 8));
-            p.drawText(x0+x, y0+y, QString::number(board[m+PADDING][n+PADDING]));
+            p.drawText(X0+x, Y0+y, QString::number(solver.board[m+solver.PADDING][n+solver.PADDING]));
 #endif
         }
     }
 }
 
-Solution Overlay::get_best_move() {
-    auto solutions = calc_solutions();
-    if (solutions.empty()) {
-        return {-1, -1, -1, -1};
-    }
-    sort(solutions.begin(), solutions.end(), [](const auto& lhs, const auto& rhs){
-        return lhs.i1 > rhs.i1 || lhs.i2 > rhs.i2;
-    });
-
-    return solutions[0];
-}
-
 void Overlay::make_move() {
-    const auto game = window_from_name_search(display, root_win, (char *)WINDOW_NAME);
-    if (!is_game_visible(game)) {
+    if (solver.solutions.empty()) {
         return;
     }
-    auto p = get_mouse_position(display);
-    if (p.first < x0 || p.first > x0 + N * w || p.second < y0 || p.second > y0 + N * w) {
+    if (!screencapture.is_window_visible((char *)WINDOW_NAME)) {
         return;
     }
-    auto s = get_best_move();
-    if (s.i1 == -1) {
+    auto p = mouse.get_mouse_position();
+    if (p.first < X0 || p.first > X0 + solver.N * W || p.second < Y0 || p.second > Y0 + solver.N * W) {
         return;
     }
-    const auto left_btn = 1; //XKeysymToKeycode(display, XK_Pointer_Button1);
-    const auto screen = DefaultScreen(display);
-    move_mouse(display, (s.j1 + 0.5) * w + x0, (s.i1 + 0.5) * w + y0, screen);
-    mouse_click(display, left_btn);
-    usleep(rand() % 5000 + 1000);
-    move_mouse(display, (s.j2 + 0.5) * w + x0, (s.i2 + 0.5) * w + y0, screen);
-    mouse_click(display, left_btn);
-}
-
-vector<Solution> Overlay::calc_solutions() {
-    vector<Solution> s;
-    for (int m = N-1+PADDING; m >= PADDING; --m ) {
-        for (int n = PADDING; n < N+PADDING; ++n) {
-            const int c = board[m][n], cr = board[m][n+1], ct = board[m-1][n];
-            // swap with the right cell
-            if (cr != -1) {
-                if ((c == board[m][n+2] && c == board[m][n+3])
-                 || (c == board[m-1][n+1] && c == board[m-2][n+1])
-                 || (c == board[m+1][n+1] && c == board[m+2][n+1])
-                 || (c == board[m-1][n+1] && c == board[m+1][n+1])
-                 || (cr == board[m][n-1] && cr == board[m][n-2])
-                 || (cr == board[m-1][n] && cr == board[m-2][n])
-                 || (cr == board[m+1][n] && cr == board[m+2][n])
-                 || (cr == board[m-1][n] && cr == board[m+1][n])
-                ) {
-                    s.push_back({m - PADDING, n - PADDING, m - PADDING, n + 1 - PADDING});
-                }
-            }
-            // swap with the top cell
-            if (ct != -1) {
-                if ((c == board[m-2][n] && c == board[m-3][n])
-                 || (c == board[m-1][n-1] && c == board[m-1][n-2])
-                 || (c == board[m-1][n+1] && c == board[m-1][n+2])
-                 || (c == board[m-1][n-1] && c == board[m-1][n+1])
-                 || (ct == board[m+1][n] && ct == board[m+2][n])
-                 || (ct == board[m][n-1] && ct == board[m][n-2])
-                 || (ct == board[m][n+1] && ct == board[m][n+2])
-                 || (ct == board[m][n-1] && ct == board[m][n+1])
-                ) {
-                    s.push_back({m - PADDING, n - PADDING, m - 1 - PADDING, n - PADDING});
-                }
-            }
+    auto s = (*solver.solutions.begin()).first;
+    const auto now = high_resolution_clock::now();
+    using namespace std::chrono_literals;
+    for (const auto &[k, v] : solver.solutions) {
+        if (now - v >= 1.0s) {
+            s = k;
+            break;
         }
     }
-
-    return s;
+    const int left_btn = 1;
+    mouse.move_to((s.j1 + 0.5) * W + X0, (s.i1 + 0.5) * W + Y0);
+    mouse.button_click(left_btn);
+    usleep(rand() % 5000 + 1000);
+    mouse.move_to((s.j2 + 0.5) * W + X0, (s.i2 + 0.5) * W + Y0);
+    mouse.button_click(left_btn);
 }
