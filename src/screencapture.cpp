@@ -47,6 +47,10 @@ ScreenCapture::ScreenCapture() :
 }
 
 ScreenCapture::~ScreenCapture() {
+    if (img) {
+        XDestroyImage(img);
+        img = nullptr;
+    }
     XCloseDisplay(display);
 }
 
