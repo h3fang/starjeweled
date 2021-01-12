@@ -6,9 +6,7 @@
 // move Qt headers (from .cpp) before <X11/Xlib.h>, so they don't conflict
 #include <QPainter>
 #include <QTimer>
-#include <QWindow>
 #include <QScreen>
-#include <QDebug>
 
 #include <X11/Xlib.h>
 
