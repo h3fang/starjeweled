@@ -71,7 +71,7 @@ std::pair<int, int> get_mouse_position(Display* dpy) {
     return r;
 }
 
-Overlay::Overlay(QWidget *parent) :
+Overlay::Overlay(bool automate, int interval, QWidget *parent) :
     QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint),
     board(N+2*PADDING, vector<int>(N+2*PADDING, -1)),
     display(XOpenDisplay(NULL)),
@@ -87,9 +87,11 @@ Overlay::Overlay(QWidget *parent) :
     connect(t, SIGNAL(timeout()), this, SLOT(update()));
     t->start(100);
 
-    t = new QTimer(this); t->setTimerType(Qt::PreciseTimer);
-    connect(t, SIGNAL(timeout()), this, SLOT(make_move()));
-    t->start(600);
+    if (automate) {
+        t = new QTimer(this); t->setTimerType(Qt::PreciseTimer);
+        connect(t, SIGNAL(timeout()), this, SLOT(make_move()));
+        t->start(interval);
+    }
 }
 
 Overlay::~Overlay() {

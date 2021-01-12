@@ -40,7 +40,7 @@ class Overlay : public QWidget
     Window root_win;
 
 public:
-    explicit Overlay(QWidget *parent = 0);
+    explicit Overlay(bool automate = true, int interval = 1000, QWidget *parent = 0);
     ~Overlay();
 
 protected:
