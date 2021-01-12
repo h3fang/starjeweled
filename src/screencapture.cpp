@@ -1,6 +1,6 @@
 #include "screencapture.h"
-#include "x.hpp"
 #include <string.h>
+#include "x.hpp"
 
 Window window_from_name_search(Display *display, Window current, char const *target) {
     /* Check if this window has the name we seek */

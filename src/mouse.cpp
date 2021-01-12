@@ -1,7 +1,7 @@
 #include "mouse.h"
-#include <X11/extensions/XTest.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <X11/extensions/XTest.h>
 
 Mouse::Mouse() : dpy(XOpenDisplay(NULL)) {}
 
