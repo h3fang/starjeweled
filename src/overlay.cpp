@@ -2,80 +2,15 @@
 
 #include <unistd.h>
 
-#include "x.hpp"
+#include <QPainter>
+#include <QTimer>
+#include <QScreen>
+
 #include "mouse.h"
-
-int is_window_visible(Display *display, Window wid) {
-    XWindowAttributes wattr;
-    XGetWindowAttributes(display, wid, &wattr);
-    if (wattr.map_state != IsViewable)
-        return False;
-
-    return True;
-}
-
-Window window_from_name_search(Display *display, Window current, char const *target) {
-    /* Check if this window has the name we seek */
-    XTextProperty text;
-    if(XGetWMName(display, current, &text) > 0 && text.nitems > 0) {
-        int count = 0;
-        char **list = NULL;
-        if (Xutf8TextPropertyToTextList(display, &text, &list, &count) == Success && count > 0) {
-            const char* r = strstr(list[0], target);
-            if(r != NULL) {
-                XFree(text.value);
-                XFreeStringList(list);
-                return current;
-            }
-        }
-        XFreeStringList(list);
-    }
-    XFree(text.value);
-
-    Window retval = 0, root, parent, *children;
-    unsigned children_count;
-
-    /* If it does not: check all subwindows recursively. */
-    if(0 != XQueryTree(display, current, &root, &parent, &children, &children_count)) {
-        for(unsigned i = 0; i < children_count; ++i) {
-            Window win = window_from_name_search(display, children[i], target);
-
-            if(win != 0) {
-                retval = win;
-                break;
-            }
-        }
-
-        XFree(children);
-    }
-
-    return retval;
-}
-
-std::pair<int, int> get_mouse_position(Display* dpy) {
-    int ret = False;
-    std::pair<int, int> r{-1, -1};
-    Window window = 0, root = 0;
-    int dummy_int = 0;
-    unsigned int dummy_uint = 0;
-
-    for (int i = 0; i < ScreenCount(dpy); i++) {
-        Screen *screen = ScreenOfDisplay(dpy, i);
-        ret = XQueryPointer(dpy, RootWindowOfScreen(screen), &root, &window, &r.first, &r.second, &dummy_int, &dummy_int,
-                            &dummy_uint);
-        if (ret == True) {
-            break;
-        }
-    }
-
-    return r;
-}
 
 Overlay::Overlay(bool automate, int interval, QWidget *parent) :
     QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint),
-    board(N+2*PADDING, vector<int>(N+2*PADDING, -1)),
-    display(XOpenDisplay(NULL)),
-    root_win(XDefaultRootWindow(display))
+    board(N+2*PADDING, vector<int>(N+2*PADDING, -1))
 {
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -95,7 +30,6 @@ Overlay::Overlay(bool automate, int interval, QWidget *parent) :
 }
 
 Overlay::~Overlay() {
-    XCloseDisplay(display);
 }
 
 void Overlay::paintEvent(QPaintEvent *)
@@ -103,14 +37,15 @@ void Overlay::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    const auto game = window_from_name_search(display, root_win, (char *)WINDOW_NAME);
-    if (!is_game_visible(game)) {
+    if (!screencapture.is_window_visible((char *)WINDOW_NAME, 1920, 1080)) {
         return;
     }
 
-    auto img = X11("").getImage(game, x0, y0, N*w, N*w);
-    get_board(img, p);
-    XDestroyImage(img);
+    if (!screencapture.capture((char *)WINDOW_NAME, x0, y0, N * w, N * w)) {
+        return;
+    }
+
+    get_board(p);
 
 #ifndef NDEBUG
     // draw a rectagle around the board (for debugging)
@@ -129,21 +64,6 @@ void Overlay::paintEvent(QPaintEvent *)
     }
 }
 
-bool Overlay::is_game_visible(Window game) {
-    if (game == 0) {
-        return false;
-    }
-
-    XWindowAttributes attr;
-    if (XGetWindowAttributes(display, game, &attr) == 0 ||
-        attr.width != 1920 || attr.height != 1080 ||
-        !is_window_visible(display, game)) {
-        return false;
-    }
-
-    return true;
-}
-
 int Overlay::match_color(const vector<int>& c, vector<vector<int>>& palette, int threshold) {
     for (size_t k = 0; k < palette.size(); k++) {
         const auto p = palette[k];
@@ -157,7 +77,7 @@ int Overlay::match_color(const vector<int>& c, vector<vector<int>>& palette, int
     return palette.size() - 1;
 }
 
-void Overlay::get_board(XImage* img, QPainter& p) {
+void Overlay::get_board(QPainter& p) {
     Q_UNUSED(p);
     vector<vector<int>> pallete;
 
@@ -169,7 +89,7 @@ void Overlay::get_board(XImage* img, QPainter& p) {
             const int x = n * w + margin, y = m * w + margin;
             for (int i = 0; i < cell_w; ++i) {
                 for (int j = 0; j < cell_w; ++j) {
-                    const QColor c(XGetPixel(img, x + i, y + j));
+                    const QColor c(screencapture.get_pixel(x + i, y + j));
                     rgb[0] += c.red();
                     rgb[1] += c.green();
                     rgb[2] += c.blue();

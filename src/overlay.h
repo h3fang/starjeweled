@@ -3,12 +3,9 @@
 #include <vector>
 
 #include <QWidget>
-// move Qt headers (from .cpp) before <X11/Xlib.h>, so they don't conflict
-#include <QPainter>
-#include <QTimer>
-#include <QScreen>
 
-#include <X11/Xlib.h>
+#include "screencapture.h"
+#include "mouse.h"
 
 using std::vector;
 
@@ -33,9 +30,8 @@ class Overlay : public QWidget
     const int w = 72, x0 = 1305, y0 = 101;
 
     vector<vector<int>> board;
-
-    Display* display;
-    Window root_win;
+    ScreenCapture screencapture;
+    Mouse mouse;
 
 public:
     explicit Overlay(bool automate = true, int interval = 1000, QWidget *parent = 0);
@@ -48,9 +44,8 @@ protected slots:
     void make_move();
 
 private:
-    bool is_game_visible(Window game);
     int match_color(const vector<int>& c, vector<vector<int>>& palette, int threshold = 10);
-    void get_board(XImage* img, QPainter& p);
+    void get_board(QPainter& p);
     bool is_solution(const int m, const int n, const int dx, const int dy);
     vector<Solution> calc_solutions();
     Solution get_best_move();
