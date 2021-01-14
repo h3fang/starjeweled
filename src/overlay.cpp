@@ -94,14 +94,14 @@ void Overlay::get_board(QPainter& p) {
             rgb[0] = rgb[0] / n_pixels;
             rgb[1] = rgb[1] / n_pixels;
             rgb[2] = rgb[2] / n_pixels;
-            solver.board[m+solver.PADDING][n+solver.PADDING] = match_color(rgb, pallete, 15);
+            solver.board(m, n) = match_color(rgb, pallete, 15);
 #ifndef NDEBUG
             p.setPen(Qt::NoPen);
             p.setBrush(QBrush(QColor(rgb[0], rgb[1], rgb[2])));
             p.drawRect(QRect(X0+x-margin, Y0+y-margin, margin, margin));
             p.setPen(Qt::red);
             p.setFont(QFont("Monospace", 8));
-            p.drawText(X0+x, Y0+y, QString::number(solver.board[m+solver.PADDING][n+solver.PADDING]));
+            p.drawText(X0+x, Y0+y, QString::number(solver.board(m, n)));
 #endif
         }
     }

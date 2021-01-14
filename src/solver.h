@@ -33,16 +33,18 @@ class Solver
 {
 public:
     const int N = 8;
-    const int PADDING = 3;
-    vector<vector<int>> board;
     map<Solution, high_resolution_clock::time_point> solutions;
 
 public:
     Solver();
+    int &board(int i, int j);
     void calc_solutions();
     Solution get_best_solution() const;
 
 private:
+    const int PADDING = 3;
+    vector<vector<int>> b;
+
     char check_right(int m, int n) const;
     char check_top(int m, int n) const;
 };
