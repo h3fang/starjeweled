@@ -39,7 +39,10 @@ public:
 
 public:
     Solver();
+    void calc_solutions();
+    Solution get_best_solution() const;
+
+private:
     char check_right(int m, int n) const;
     char check_top(int m, int n) const;
-    void calc_solutions();
 };

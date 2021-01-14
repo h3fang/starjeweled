@@ -108,7 +108,8 @@ void Overlay::get_board(QPainter& p) {
 }
 
 void Overlay::make_move() {
-    if (solver.solutions.empty()) {
+    const auto s = solver.get_best_solution();
+    if (s.i1 < 0) {
         return;
     }
     if (!screencapture.is_window_visible((char *)WINDOW_NAME)) {
@@ -117,15 +118,6 @@ void Overlay::make_move() {
     auto p = mouse.get_mouse_position();
     if (p.first < X0 || p.first > X0 + solver.N * W || p.second < Y0 || p.second > Y0 + solver.N * W) {
         return;
-    }
-    auto s = (*solver.solutions.begin()).first;
-    const auto now = high_resolution_clock::now();
-    using namespace std::chrono_literals;
-    for (const auto &[k, v] : solver.solutions) {
-        if (now - v >= 1.0s) {
-            s = k;
-            break;
-        }
     }
     const int left_btn = 1;
     mouse.move_to((s.j1 + 0.5) * W + X0, (s.i1 + 0.5) * W + Y0);
