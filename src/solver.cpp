@@ -1,6 +1,7 @@
 #include "solver.h"
 
-Solver::Solver() :
+Solver::Solver(int age_threshold_ms) :
+    solution_age_threshold(age_threshold_ms),
     b(N+2*PADDING, vector<int>(N+2*PADDING, -1)) {
 }
 
@@ -40,7 +41,7 @@ Solution Solver::get_best_solution() const {
     const auto now = high_resolution_clock::now();
     using namespace std::chrono_literals;
     for (const auto &[k, v] : solutions) {
-        if (now - v >= 1.0s) {
+        if (now - v >= solution_age_threshold) {
             s = k;
             break;
         }

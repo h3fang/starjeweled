@@ -36,13 +36,14 @@ public:
     map<Solution, high_resolution_clock::time_point> solutions;
 
 public:
-    Solver();
+    Solver(int age_threshold_ms);
     int &board(int i, int j);
     void calc_solutions();
     Solution get_best_solution() const;
 
 private:
     const int PADDING = 3;
+    const std::chrono::milliseconds solution_age_threshold;
     vector<vector<int>> b;
 
     char check_right(int m, int n) const;

@@ -8,8 +8,9 @@
 
 #include "mouse.h"
 
-Overlay::Overlay(bool automate, int interval, QWidget *parent) :
-    QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint)
+Overlay::Overlay(bool automate, uint interval, uint threshold, QWidget *parent) :
+    QWidget(parent, Qt::BypassWindowManagerHint | Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::WindowStaysOnTopHint),
+    solver(Solver(threshold))
 {
     setAttribute(Qt::WA_TranslucentBackground);
 

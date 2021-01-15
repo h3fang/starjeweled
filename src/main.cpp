@@ -10,10 +10,11 @@ int main(int argc, char *argv[]) {
     parser.addOptions({
         {{"a", "automation"}, "enable automation"},
         {{"i", "interval"}, "time interval between automated actions", "milliseconds", "1000"},
+        {{"t", "threshold"}, "solution age threshold", "milliseconds", "1000"},
     });
     parser.process(app);
 
-    Overlay overlay(parser.isSet("a"), parser.value("i").toInt());
+    Overlay overlay(parser.isSet("a"), parser.value("i").toUInt(), parser.value("t").toUInt());
     overlay.showMaximized();
 
     return app.exec();
