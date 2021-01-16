@@ -1,6 +1,10 @@
-cmake_minimum_required( VERSION 3.9 )
+cmake_minimum_required( VERSION 3.14 )
 
 project(starjeweled VERSION 0.2.0)
+
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(FATAL_ERROR "Only Linux system is supported.")
+endif()
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
