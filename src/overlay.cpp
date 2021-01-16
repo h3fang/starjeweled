@@ -1,6 +1,7 @@
 #include "overlay.h"
 
-#include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #include <QPainter>
 #include <QTimer>
@@ -123,7 +124,7 @@ void Overlay::make_move() {
     const int left_btn = 1;
     mouse.move_to((s.j1 + 0.5) * W + X0, (s.i1 + 0.5) * W + Y0);
     mouse.button_click(left_btn);
-    usleep(rand() % 5000 + 1000);
+    std::this_thread::sleep_for(std::chrono::microseconds(rand() % 5000 + 1000));
     mouse.move_to((s.j2 + 0.5) * W + X0, (s.i2 + 0.5) * W + Y0);
     mouse.button_click(left_btn);
 }
