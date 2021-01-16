@@ -1,6 +1,5 @@
 #include "screencapture.h"
 #include <string.h>
-#include "x.hpp"
 
 Window window_from_name_search(Display *display, Window current, char const *target) {
     /* Check if this window has the name we seek */
@@ -43,7 +42,8 @@ Window window_from_name_search(Display *display, Window current, char const *tar
 ScreenCapture::ScreenCapture() :
     display(XOpenDisplay(NULL)),
     root_win(XDefaultRootWindow(display)),
-    img(nullptr) {
+    img(nullptr),
+    x11("") {
 }
 
 ScreenCapture::~ScreenCapture() {
@@ -63,7 +63,7 @@ bool ScreenCapture::capture(const std::string &window_title, const int x, const 
     if (wid == 0) {
         return false;
     }
-    img = X11("").getImage(wid, x, y, width, height);
+    img = x11.getImage(wid, x, y, width, height);
     return img != nullptr;
 }
 

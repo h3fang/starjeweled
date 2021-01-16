@@ -1,13 +1,14 @@
 #pragma once
 #include <string>
 
-#include <X11/Xlib.h>
+#include "x.hpp"
 
 class ScreenCapture {
 private:
     Display *display;
     Window root_win;
     XImage* img;
+    X11 x11;
 
 public:
     ScreenCapture();

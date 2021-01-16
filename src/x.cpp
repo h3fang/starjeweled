@@ -156,8 +156,12 @@ XImage* X11::getImage( Window draw, int x, int y, int w, int h) {
         }
         // We don't have to worry about undoing the redirect, since as soon as maim closes X knows to undo it.
     }
+    XImage* img = nullptr;
     if ( haveXRender && haveXFixes ) {
-        return getImageUsingXRender( draw, localx, localy, w, h );
+        img = getImageUsingXRender( draw, localx, localy, w, h );
+    }
+    else {
+        img = XGetImage( display, draw, localx, localy, w, h, AllPlanes, ZPixmap );
     }
     // This stuff doesn't work very well...
     //if ( haveXShm ) {
@@ -168,7 +172,12 @@ XImage* X11::getImage( Window draw, int x, int y, int w, int h) {
             //return check;
         //}
     //}
-    return XGetImage( display, draw, localx, localy, w, h, AllPlanes, ZPixmap );
+    if (haveXComposite) {
+        for ( int i = 0; i < ScreenCount( display ); i++ ) {
+            XCompositeUnredirectSubwindows( display, RootWindow( display, i ), CompositeRedirectAutomatic );
+        }
+    }
+    return img;
 }
 
 XImage* X11::getImageUsingXRender( Window draw, int localx, int localy, int w, int h ) {
@@ -206,6 +215,9 @@ XImage* X11::getImageUsingXRender( Window draw, int localx, int localy, int w, i
     temp->green_mask = format2->direct.greenMask << format2->direct.green;
     temp->blue_mask = format2->direct.blueMask << format2->direct.blue;
     temp->depth = format2->depth;
+    XRenderFreePicture(display, picture);
+    XRenderFreePicture(display, pixmapPicture);
+    XFreePixmap(display, pixmap);
     return temp;
 }
 
