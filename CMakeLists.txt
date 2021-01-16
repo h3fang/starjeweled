@@ -20,7 +20,7 @@ set(sources
 set(BIN_TARGET "terminal")
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
-find_package(X11 REQUIRED)
+find_package(X11 COMPONENTS Xfixes Xcomposite Xrandr Xrender Xtst REQUIRED)
 
 add_executable(${BIN_TARGET} ${sources} )
 set_target_properties(${BIN_TARGET} PROPERTIES AUTOMOC ON)
@@ -29,9 +29,9 @@ target_include_directories(${BIN_TARGET} PRIVATE ${X11_INCLUDE_DIR} )
 target_link_libraries(${BIN_TARGET}
                        Qt5::Core
                        Qt5::Widgets
-                       ${X11_LIBRARIES}
-                       -lXfixes
-                       -lXcomposite
-                       -lXrandr
-                       -lXrender
-                       -lXtst )
+                       X11::X11
+                       X11::Xfixes
+                       X11::Xcomposite
+                       X11::Xrandr
+                       X11::Xrender
+                       X11::Xtst)
