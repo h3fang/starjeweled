@@ -39,7 +39,6 @@ Solution Solver::get_best_solution() const {
     }
     auto s = (*solutions.begin()).first;
     const auto now = high_resolution_clock::now();
-    using namespace std::chrono_literals;
     for (const auto &[k, v] : solutions) {
         if (now - v >= solution_age_threshold) {
             s = k;
