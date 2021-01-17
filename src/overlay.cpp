@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+#include <random>
 
 #include <QPainter>
 #include <QTimer>
@@ -110,6 +111,12 @@ void Overlay::get_board(QPainter& p) {
 }
 
 void Overlay::make_move() {
+    static std::random_device rd;
+    static std::mt19937 gen{rd()};
+    static std::normal_distribution<double> dist{0, 1.0};
+    static auto noise = [&](){return std::clamp(0.1 * dist(gen), -0.3, 0.3);};
+    static auto interval = [&](){return std::clamp(int(500 * dist(gen)) + 3000, 1500, 4500);};
+
     const auto s = solver.get_best_solution();
     if (s.i1 < 0) {
         return;
@@ -121,10 +128,11 @@ void Overlay::make_move() {
     if (p.first < X0 || p.first > X0 + solver.N * W || p.second < Y0 || p.second > Y0 + solver.N * W) {
         return;
     }
+
     const int left_btn = 1;
-    mouse.move_to((s.j1 + 0.5) * W + X0, (s.i1 + 0.5) * W + Y0);
+    mouse.move_to((s.j1 + 0.5 + noise()) * W + X0, (s.i1 + 0.5 + noise()) * W + Y0);
     mouse.button_click(left_btn);
-    std::this_thread::sleep_for(std::chrono::microseconds(rand() % 5000 + 1000));
-    mouse.move_to((s.j2 + 0.5) * W + X0, (s.i2 + 0.5) * W + Y0);
+    std::this_thread::sleep_for(std::chrono::microseconds(interval()));
+    mouse.move_to((s.j2 + 0.5 + noise()) * W + X0, (s.i2 + 0.5 + noise()) * W + Y0);
     mouse.button_click(left_btn);
 }
