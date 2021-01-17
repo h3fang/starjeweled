@@ -1,11 +1,17 @@
 #pragma once
 #include <utility>
+#include <random>
+#include <functional>
 #include <X11/Xlib.h>
 
 class Mouse
 {
 private:
     Display *dpy;
+    std::random_device rd;
+    std::mt19937 gen{rd()};
+    std::normal_distribution<double> dist{3000, 500};
+
 public:
     Mouse();
     ~Mouse();

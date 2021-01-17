@@ -1,7 +1,11 @@
 #include "mouse.h"
-#include <stdlib.h>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
+#include <algorithm>
 #include <X11/extensions/XTest.h>
+
+using std::this_thread::sleep_for;
+using std::chrono::microseconds;
 
 Mouse::Mouse() : dpy(XOpenDisplay(NULL)) {}
 
@@ -15,7 +19,7 @@ void Mouse::move_to(int x, int y, int screen) {
     }
     XWarpPointer(dpy, None, RootWindow(dpy, screen), 0, 0, 0, 0, x, y);
     XFlush(dpy);
-    usleep(rand() % 3000 + 1000);
+    sleep_for(microseconds(std::clamp(int(dist(gen)), 1000, 5000)));
 }
 
 void Mouse::button(unsigned int btn, int down) {
@@ -25,7 +29,7 @@ void Mouse::button(unsigned int btn, int down) {
 
 void Mouse::button_click(unsigned int btn) {
     button(btn, True);
-    usleep(rand() % 5000 + 1000);
+    sleep_for(microseconds(std::clamp(int(dist(gen)), 1000, 5000)));
     button(btn, False);
 }
 
