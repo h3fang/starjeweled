@@ -97,14 +97,14 @@ void Overlay::get_board(QPainter& p) {
             rgb[0] = rgb[0] / n_pixels;
             rgb[1] = rgb[1] / n_pixels;
             rgb[2] = rgb[2] / n_pixels;
-            solver.board(m, n) = match_color(rgb, pallete, 15);
+            solver.cell(m, n) = match_color(rgb, pallete, 15);
 #ifndef NDEBUG
             p.setPen(Qt::NoPen);
             p.setBrush(QBrush(QColor(rgb[0], rgb[1], rgb[2])));
             p.drawRect(QRect(X0+x-margin, Y0+y-margin, margin, margin));
             p.setPen(Qt::red);
             p.setFont(QFont("Monospace", 8));
-            p.drawText(X0+x, Y0+y, QString::number(solver.board(m, n)));
+            p.drawText(X0+x, Y0+y, QString::number(solver.cell(m, n)));
 #endif
         }
     }
@@ -117,7 +117,7 @@ void Overlay::make_move() {
     static auto noise = [&](){return std::clamp(0.1 * dist(gen), -0.3, 0.3);};
     static auto interval = [&](){return std::clamp(int(500 * dist(gen)) + 3000, 1500, 4500);};
 
-    const auto s = solver.get_best_solution();
+    const auto s = solver.get_best_move();
     if (s.i1 < 0) {
         return;
     }
