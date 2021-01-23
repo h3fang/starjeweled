@@ -56,7 +56,7 @@ void Overlay::paintEvent(QPaintEvent *)
 
     // draw a line for each solution
     p.setPen(QPen(Qt::magenta, 7.0));
-    for(const auto& [s, v] : solver.solutions) {
+    for(const auto& s : solver.solutions) {
         const int x1 = X0 + (s.j1) * W + 0.5 * W, y1 = Y0 + (s.i1) * W + 0.5 * W;
         const int x2 = X0 + (s.j2) * W + 0.5 * W, y2 = Y0 + (s.i2) * W + 0.5 * W;
         p.drawLine(x1,y1,x2,y2);
@@ -117,7 +117,7 @@ void Overlay::make_move() {
     static auto noise = [&](){return std::clamp(0.1 * dist(gen), -0.3, 0.3);};
     static auto interval = [&](){return std::clamp(int(500 * dist(gen)) + 3000, 1500, 4500);};
 
-    const auto s = solver.get_best_move();
+    const auto s = solver.get_best_solution();
     if (s.i1 < 0) {
         return;
     }

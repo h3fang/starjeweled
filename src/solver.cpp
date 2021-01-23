@@ -12,47 +12,41 @@ int &Solver::cell(int i, int j) {
 }
 
 void Solver::calc_solutions() {
-    map<Move, Solution, std::greater<Move>> current;
+    vector<Solution> current;
     const auto now = high_resolution_clock::now();
     for (int m = N-1+PADDING; m >= PADDING; --m ) {
         for (int n = PADDING; n < N+PADDING; ++n) {
             // swap with the right cell
             if (int e = check_right(board, m, n).size(); e > 0) {
-                Move move{m - PADDING, n - PADDING, m - PADDING, n + 1 - PADDING};
-                current[move] = {move, e, now};
+                current.push_back({m - PADDING, n - PADDING, m - PADDING, n + 1 - PADDING, e, now});
             }
             // swap with the top cell
             if (int e = check_top(board, m, n).size(); e > 0) {
-                Move move{m - PADDING, n - PADDING, m - 1 - PADDING, n - PADDING};
-                current[move] = {move, e, now};
+                current.push_back({m - PADDING, n - PADDING, m - 1 - PADDING, n - PADDING, e, now});
             }
         }
     }
 
-    for (auto& [k, v] : current) {
-        if (auto it = solutions.find(k); it != solutions.end()) {
-            v.timestamp = (*it).second.timestamp;
+    for (auto& v : current) {
+        if (auto it = std::find(solutions.begin(), solutions.end(), v); it != solutions.end()) {
+            v.timestamp = (*it).timestamp;
         }
     }
     solutions = current;
 }
 
-Move Solver::get_best_move() const {
+Solution Solver::get_best_solution() {
     if (solutions.empty()) {
         return {-1};
     }
-    vector<Solution> ss;
-    for (const auto& [k, v] : solutions) {
-        ss.push_back(v);
-    }
-    std::sort(ss.begin(), ss.end(), std::greater<Solution>());
+    std::sort(solutions.begin(), solutions.end(), std::greater<Solution>());
     const auto now = high_resolution_clock::now();
-    for (const auto& s : ss) {
+    for (const auto& s : solutions) {
         if (now - s.timestamp >= solution_age_threshold) {
-            return s.move;
+            return s;
         }
     }
-    return ss[0].move;
+    return solutions[0];
 }
 
 set<pair<int, int>> Solver::check_right(vector<vector<int>> &b, int m, int n) const {
@@ -166,7 +160,7 @@ set<pair<int, int>> Solver::check_top(vector<vector<int>> &b, int m, int n) cons
     return canceled;
 }
 
-int Solver::simulate(const Move& m) {
+int Solver::simulate(const Solution& m) {
     auto b = board;
     std::swap(b[m.i1][m.j1], b[m.i2][m.j2]);
     vector<pair<int, int>> canceled;
