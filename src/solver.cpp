@@ -52,7 +52,7 @@ Solution Solver::get_best_solution() {
 set<pair<int, int>> Solver::check_right(vector<vector<int>> &b, int m, int n) const {
     set<pair<int, int>> canceled;
     const int c = b[m][n], cr = b[m][n+1];
-    if (cr == -1) {
+    if (c == cr || cr == -1) {
         return canceled;
     }
 
@@ -108,7 +108,7 @@ set<pair<int, int>> Solver::check_right(vector<vector<int>> &b, int m, int n) co
 set<pair<int, int>> Solver::check_top(vector<vector<int>> &b, int m, int n) const {
     set<pair<int, int>> canceled;
     const int c = b[m][n], ct = b[m-1][n];
-    if (ct == -1) {
+    if (c == ct || ct == -1) {
         return canceled;
     }
 
