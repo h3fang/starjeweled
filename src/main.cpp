@@ -4,6 +4,10 @@
 #include "overlay.h"
 
 int main(int argc, char *argv[]) {
+    if (qEnvironmentVariableIsSet("QT_QPA_PLATFORM") && qEnvironmentVariable("QT_QPA_PLATFORM") != "xcb") {
+        printf("setting QT_QPA_PLATFORM to xcb\n");
+        qputenv("QT_QPA_PLATFORM", "xcb");
+    }
     QApplication app(argc, argv);
     QCommandLineParser parser;
     parser.addHelpOption();
